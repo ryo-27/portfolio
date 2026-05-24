@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="ja" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ryo-27 | Portfolio</title>
+    
+    <!-- Google Fonts: Inter (English) & Noto Sans JP (Japanese) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Devicon for Tech Stack Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
+    
+    <!-- Tailwind CSS (CDN for standalone file) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
+                    },
+                    colors: {
+                        eng: '#4f46e5', // Indigo
+                        soc: '#0d9488', // Teal
+                        bus: '#d97706', // Amber
+                        res: '#9333ea', // Purple
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base styles */
+        html {
+            scroll-padding-top: 4rem; /* ナビゲーションバーの高さ (h-16 = 64px) */
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+            overflow-x: hidden;
+        }
+
+        /* 完全に背景のスクロールを止める */
+        body.drawer-open {
+            overflow: hidden;
+            height: 100vh;
+            touch-action: none;
+        }
+
+        /* Project Card Styles */
+        .project-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .project-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+            border-color: #cbd5e1;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 40;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Drawer UI */
+        .drawer {
+            position: fixed;
+            background: white;
+            z-index: 50;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Mobile Bottom Sheet */
+        @media (max-width: 767px) {
+            .drawer {
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 90vh;
+                border-radius: 1.5rem 1.5rem 0 0;
+                transform: translateY(100%);
+            }
+            .drawer.active {
+                transform: translateY(0);
+            }
+            .drawer-left { display: none; }
+            .drawer-right { width: 100%; height: 100%; display: flex; flex-direction: column;}
+        }
+
+        /* Desktop Full Screen Split Panel */
+        @media (min-width: 768px) {
+            .drawer {
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                transform: translateX(100%);
+                flex-direction: row; 
+            }
+            .drawer.active {
+                transform: translateX(0);
+            }
+            .drawer-left {
+                width: 50%;
+                border-right: 1px solid #e2e8f0;
+                background-color: #f8fafc;
+                display: flex;
+                flex-direction: column;
+                padding: 2rem;
+            }
+            .drawer-right {
+                width: 50%;
+                background-color: #ffffff;
+                display: flex;
+                flex-direction: column;
+                position: relative;
+                height: 100vh;
+            }
+        }
+        
+        /* Custom Scrollbar for Drawer Content Only */
+        .drawer-content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .drawer-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .drawer-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .drawer-content::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .drawer-content::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="fixed w-full bg-slate-50/80 backdrop-blur-md z-30 border-b border-slate-200/50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <span class="font-bold text-xl tracking-tighter">ryo-27<span class="text-indigo-600">.</span></span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#hero" class="text-sm font-medium text-slate-600 hover:text-slate-900 transition">Home</a>
+                    <a href="#projects" class="text-sm font-medium text-slate-600 hover:text-slate-900 transition">Projects</a>
+                    <a href="#about" class="text-sm font-medium text-slate-600 hover:text-slate-900 transition">About</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-24 pb-16">
+        <section id="hero" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
+            <div class="mb-14 mx-auto text-center">
+                <p class="text-sm font-bold text-indigo-600 tracking-[0.15em] uppercase mb-4">Portfolio</p>
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-6">
+                    Beyond <span class="text-indigo-600">Boundaries.</span>
+                </h1>
+                
+                <div class="flex flex-wrap gap-2 mb-6 justify-center">
+                    <span class="px-3 py-1 text-[11px] font-bold bg-slate-100 text-slate-600 rounded-md tracking-wider">IT / Engineering</span>
+                    <span class="px-3 py-1 text-[11px] font-bold bg-slate-100 text-slate-600 rounded-md tracking-wider">Welfare</span>
+                    <span class="px-3 py-1 text-[11px] font-bold bg-slate-100 text-slate-600 rounded-md tracking-wider">Business</span>
+                    <span class="px-3 py-1 text-[11px] font-bold bg-slate-100 text-slate-600 rounded-md tracking-wider">Research</span>
+                </div>
+
+                <p class="text-base md:text-lg text-slate-600 leading-relaxed font-medium">
+                    様々な分野で主体的に学び続け, 活躍する。<br class="hidden md:block">
+                    確かな技術力を核に積極的な挑戦を続ける傍ら、純粋な「人との繋がり」を大切する。<br class="hidden md:block">
+                    これまでの主な活動の一覧。
+                </p>
+            </div>
+        </section>
+
+        <section id="featured" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-10 pt-5 border-t border-slate-200/60">
+            <div class="mb-8 flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-2.5 mb-2">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                        <h2 class="text-2xl font-bold tracking-tight text-slate-800">Featured Work</h2>
+                    </div>
+                    <p class="text-slate-500 text-sm">領域横断の成果や、特に実績を上げた代表的なプロジェクト。</p>
+                </div>
+            </div>
+            <div id="featured-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8"></div>
+        </section>
+
+        <section id="projects" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-10 pt-5 border-t border-slate-200/60">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold tracking-tight mb-2">Projects</h2>
+                    <p class="text-slate-500 text-sm">画像を使わず、本質的な活動内容で構成されたプロジェクト一覧。</p>
+                </div>
+                <div class="flex flex-wrap gap-2" id="filter-container"></div>
+            </div>
+
+            <div class="relative w-full" id="projects-list-container">
+                <div id="projects-grid-wrapper" class="overflow-hidden transition-[max-height] duration-700 ease-in-out relative">
+                    <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8"></div>
+                </div>
+                
+                <!-- Fade out overlay & Show more button -->
+                <div id="projects-fade-overlay" class="absolute bottom-0 left-0 w-full h-56 bg-gradient-to-t from-slate-50 via-slate-50/90 to-transparent flex items-end justify-center pb-2 pointer-events-none transition-opacity duration-300">
+                    <button onclick="showMoreProjects()" class="pointer-events-auto px-8 py-3.5 mb-2 bg-white border border-slate-200 rounded-full text-sm font-bold text-slate-700 shadow-[0_4px_14px_0_rgba(0,0,0,0.05)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.1)] hover:border-slate-300 hover:-translate-y-0.5 transition-all flex items-center gap-2 group">
+                        さらに表示する
+                        <svg class="w-4 h-4 text-slate-400 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-10 pt-5 border-t border-slate-200/60">
+            <div class="mb-14">
+                <h2 class="text-3xl font-bold tracking-tight mb-2">About ryo-27</h2>
+                <p class="text-slate-500 text-sm">背景と技術スタック、アウトプットへのリンク。</p>
+            </div>
+
+            <!-- Row 1: Mindset & Basic Info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 mb-10">
+                <!-- Left: Mindset & Background -->
+                <div>
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-200 pb-2">Mindset & Background</h3>
+                    <p class="text-slate-800 text-base leading-relaxed font-medium mb-4">
+                        「汎用的な技術力」と「人間的な関わり」の使い分け。
+                    </p>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-6">
+                        どこにでも汎用的に効く確かな「技術力」を軸に、ビジネスや研究など様々な分野に越境し、新たな価値を実装・学習することに面白さを感じています。<br><br>
+                        同時に、福祉の現場においては必ずしも技術による解決にはこだわらず、純粋に人と関わり、繋がりを大切にしながら活動そのものを楽しむ姿勢を持っています。
+                    </p>
+                </div>
+                
+                <!-- Right: Basic Info -->
+                <div>
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-200 pb-2">Basic Info</h3>
+                    <ul class="text-sm text-slate-700 space-y-4">
+                        <li class="flex items-center gap-4">
+                            <span class="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 flex-shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6"></path></svg></span>
+                            <span class="font-medium">静岡大学 情報学部 行動情報学科 金鎭赫研究室</span>
+                        </li>
+                        <li class="flex items-center gap-4">
+                            <span class="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 flex-shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></span>
+                            <span class="font-medium"></span>
+                        </li>
+                        <li class="flex items-center gap-4">
+                            <span class="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 flex-shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg></span>
+                            <span class="font-medium">サークルAMIS元代表・たねのわ設立者/代表</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Row 2: Tech Stack -->
+            <div class="mb-16">
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-200 pb-2">Tech Stack</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <!-- 1. プログラミング言語 -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                        <h4 class="text-sm font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">1. プログラミング言語</h4>
+                        <ul class="space-y-2.5">
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-python-plain colored w-4 text-center"></i><span class="font-medium text-xs">Python</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★★</div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-typescript-plain colored w-4 text-center"></i><span class="font-medium text-xs">TypeScript</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-javascript-plain colored w-4 text-center"></i><span class="font-medium text-xs">JavaScript</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-java-plain colored w-4 text-center"></i><span class="font-medium text-xs">Java</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-ruby-plain colored w-4 text-center"></i><span class="font-medium text-xs">Ruby</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-cplusplus-plain colored w-4 text-center"></i><span class="font-medium text-xs">C / C++</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★<span class="text-slate-200">★★</span></div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-csharp-plain colored w-4 text-center"></i><span class="font-medium text-xs">C#</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★<span class="text-slate-200">★★</span></div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 2. フロントエンド -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                        <h4 class="text-sm font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">2. フロントエンド</h4>
+                        <ul class="space-y-2.5">
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-html5-plain colored w-4 text-center"></i><span class="font-medium text-xs">HTML / CSS</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★★</div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-react-original colored w-4 text-center"></i><span class="font-medium text-xs">React</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★★</div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-tailwindcss-plain colored w-4 text-center"></i><span class="font-medium text-xs">CSS Frameworks</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★★</div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-nextjs-plain text-slate-800 w-4 text-center"></i><span class="font-medium text-xs">Next.js</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 3. バックエンド -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                        <h4 class="text-sm font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">3. バックエンド</h4>
+                        <ul class="space-y-2.5">
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-python-plain colored w-4 text-center"></i><span class="font-medium text-xs">Python (Django 等)</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★★</div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-nodejs-plain colored w-4 text-center"></i><span class="font-medium text-xs">Node.js</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-rails-plain colored w-4 text-center"></i><span class="font-medium text-xs">Ruby (Rails)</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 5. インフラ・クラウド・DevOps -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                        <h4 class="text-sm font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">5. インフラ・クラウド</h4>
+                        <ul class="space-y-2.5">
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-amazonwebservices-original colored w-4 text-center"></i><span class="font-medium text-xs">AWS</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★★</div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-googlecloud-plain colored w-4 text-center"></i><span class="font-medium text-xs">GCP</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★★</div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-azure-plain colored w-4 text-center"></i><span class="font-medium text-xs">Azure</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-docker-plain colored w-4 text-center"></i><span class="font-medium text-xs">Docker / k8s</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-github-original text-slate-800 w-4 text-center"></i><span class="font-medium text-xs">CI/CD</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-linux-plain text-slate-800 w-4 text-center"></i><span class="font-medium text-xs">OS (Linux等)</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 6. AI・データサイエンス -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                        <h4 class="text-sm font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">6. AI・データ</h4>
+                        <ul class="space-y-2.5">
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-pandas-original colored w-4 text-center"></i><span class="font-medium text-xs">データ処理</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★★</div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <svg class="w-4 h-4 text-purple-500 text-center flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                                    <span class="font-medium text-xs">LLM API統合</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★★</div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-tensorflow-original colored w-4 text-center"></i><span class="font-medium text-xs">機械学習ライブラリ</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <svg class="w-4 h-4 text-slate-400 text-center flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                                    <span class="font-medium text-xs">LLM開発FW</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <svg class="w-4 h-4 text-slate-400 text-center flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                    <span class="font-medium text-xs">RAG アーキテクチャ</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <svg class="w-4 h-4 text-amber-500 text-center flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                    <span class="font-medium text-xs">データ可視化</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 9. 開発ツール・マネジメント・デザイン -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                        <h4 class="text-sm font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">9. ツール・デザイン</h4>
+                        <ul class="space-y-2.5">
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-git-plain colored w-4 text-center"></i><span class="font-medium text-xs">バージョン管理</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★★</div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <svg class="w-4 h-4 text-slate-500 text-center flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                    <span class="font-medium text-xs">アジャイル / スクラム</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★★</div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-trello-plain colored w-4 text-center"></i><span class="font-medium text-xs">タスク管理</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★★</div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <i class="devicon-figma-plain colored w-4 text-center"></i><span class="font-medium text-xs">UI/UX・プロトタイピング</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                            <li class="flex justify-between items-start text-sm">
+                                <div class="flex items-center gap-2 text-slate-700 leading-tight">
+                                    <svg class="w-4 h-4 text-slate-500 text-center flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    <span class="font-medium text-xs">要件定義・システム設計</span>
+                                </div>
+                                <div class="flex text-amber-400 text-[10px] tracking-widest ml-2 flex-shrink-0 mt-0.5">★★<span class="text-slate-200">★</span></div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 3: Links & Profiles -->
+            <div>
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-200 pb-2">Links & Profiles</h3>
+                <div class="flex flex-wrap gap-3">
+                    <!-- GitHub -->
+                    <a href="https://github.com/ryo-27" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:border-slate-400 hover:shadow-sm transition-all group">
+                        <i class="devicon-github-original text-lg group-hover:scale-110 transition-transform"></i> GitHub
+                    </a>
+                    <!-- ボランティア団体 たねのわ -->
+                    <a href="https://www.instagram.com/tanenowa_hama?igsh=MTdiOXRpbWFxZjZqdg%3D%3D" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:border-slate-400 hover:shadow-sm transition-all group">
+                        <svg class="w-4 h-4 text-teal-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+                        ボランティア団体 たねのわ
+                    </a>
+                    <!-- AMIS -->
+                    <a href="https://amis-web.github.io/intro/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:border-slate-400 hover:shadow-sm transition-all group">
+                        <svg class="w-4 h-4 text-indigo-600" fill="currentColor" viewBox="0 0 24 24"><path d="M21 16.5c0 .38-.21.71-.53.88l-7.9 4.44c-.16.12-.36.18-.57.18s-.41-.06-.57-.18l-7.9-4.44A.991.991 0 013 16.5v-9c0-.38.21-.71.53-.88l7.9-4.44c.16-.12.36-.18.57-.18s.41.06.57.18l7.9 4.44c.32.17.53.5.53.88v9z"></path></svg>
+                        ボランティアサークル AMIS
+                    </a>
+                    <!-- 研究室 -->
+                    <a href="https://kimjlab.github.io/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:border-slate-400 hover:shadow-sm transition-all group">
+                        <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                        研究室Web
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 py-10 text-center">
+        <p class="text-slate-500 text-sm font-medium">© 2026 ryo-27. All rights reserved.</p>
+    </footer>
+
+    <!-- Overlay -->
+    <div id="overlay" class="overlay" onclick="closeDrawer()"></div>
+
+    <!-- Drawer Panel (Full Screen Split Layout) -->
+    <div id="drawer" class="drawer">
+        
+        <!-- PC用 左側ペイン：カオスマップ固定表示 -->
+        <div class="drawer-left">
+            <div class="mb-4">
+                <h3 class="text-xl font-bold text-slate-800 tracking-tight">活動実績一覧</h3>
+                <p class="text-xs text-slate-500 mt-1">ピンをクリックして他のプロジェクトをシームレスに確認できます。</p>
+            </div>
+            
+            <div id="drawer-chaosmap-container" class="relative flex-1 rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 shadow-inner">
+                <div id="drawer-chaosmap-bg" class="absolute inset-0 transition-all duration-500"></div>
+                <div id="drawer-chaosmap-nodes" class="absolute inset-0"></div>
+            </div>
+        </div>
+
+        <!-- 右側ペイン：プロジェクト詳細 -->
+        <div class="drawer-right">
+            <!-- Header (固定) -->
+            <div class="sticky top-0 bg-white/90 backdrop-blur-md border-b border-slate-100 px-6 py-4 flex justify-between items-center z-10 flex-shrink-0">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <button onclick="closeDrawer()" class="p-2 -ml-2 rounded-full text-slate-500 transition-colors focus:outline-none">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    <span class="text-sm font-semibold text-slate-400 uppercase tracking-widest">Project Details</span>
+                </div>
+            </div>
+            
+            <!-- Content Area (スクロール領域) -->
+            <div id="drawer-content" class="drawer-content p-6 md:p-10 pb-32">
+                <!-- Dynamic content injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const axes = ['All', 'エンジニア', '社会福祉', '研究', 'ビジネス'];
+        
+        const projectsData = [
+            // 領域横断型
+            { id: 'p1', title: '受託開発', shortTitle: '受託開発', summary: '地域課題解決のためのシステム開発と運用', tags: ['エンジニア', 'ビジネス', '社会福祉', '研究'] },
+            { id: 'p2', title: '浜医学生との共同プロジェクト', shortTitle: '浜医共同PJ', summary: '教育ボラサポート / 放課後アクティビティ', tags: ['エンジニア', 'ビジネス', '社会福祉', '研究'] },
+            { id: 'p3', title: '経験の支援を行う団体立ち上げ', shortTitle: '支援団体設立', summary: '月一回のイベント企画・運営', tags: ['エンジニア', 'ビジネス', '社会福祉', '研究'] },
+            { id: 'p4', title: 'エムニインターン（松尾研発SU）', shortTitle: 'エムニインターン', summary: '展示会営業および開発アシスタント', tags: ['エンジニア', 'ビジネス', '社会福祉', '研究'] },
+            { id: 'p5', title: '地方創生プロジェクト', shortTitle: '地方創生PJ', summary: 'データドリブンで人文系 / 学祭用ゲーム', tags: ['エンジニア', 'ビジネス', '社会福祉', '研究'] },
+            // 技術特化型
+            { id: 'p6', title: '松尾研インターン', shortTitle: '松尾研インターン', summary: '英作文評価LLMシステムの開発', tags: ['エンジニア', '研究'] },
+            { id: 'p7', title: '研究室システム', shortTitle: '研究室システム', summary: '論文用実験システムの構築', tags: ['エンジニア', '研究'] },
+            { id: 'p8', title: 'JAXAコンペ国内予選', shortTitle: 'JAXAコンペ', summary: '宇宙データを用いた課題解決', tags: ['エンジニア', '研究'] },
+            { id: 'p9', title: 'PAKSHAハッカソンインターン', shortTitle: 'PAKSHA', summary: 'ハッカソンでのプロトタイプ開発', tags: ['エンジニア', '研究'] },
+            { id: 'p10', title: '三ヶ日謎解きイベント用アプリ', shortTitle: '謎解きアプリ', summary: '地域イベント向けアプリ開発', tags: ['エンジニア', '研究'] },
+            { id: 'p11', title: '自然言語処理ゼミ / 研究', shortTitle: 'NLPゼミ・研究', summary: '生体情報データの解析と研究', tags: ['エンジニア', '研究'] },
+            // ビジネス・データ型
+            { id: 'p12', title: '東大GCI講義修了', shortTitle: '東大GCI', summary: 'コンペ成績優秀 / GCIプレゼン資料作成', tags: ['ビジネス', '研究'] }, 
+            { id: 'p13', title: '東大DLB講座修了', shortTitle: '東大DLB', summary: 'コンペ成績優秀', tags: ['ビジネス', '研究'] },
+            { id: 'p14', title: 'ビジコン / キャンパスアイデア甲子園', shortTitle: 'ビジコン等', summary: '最終審査進出', tags: ['ビジネス'] },
+            { id: 'p15', title: 'RESASデータコンテスト', shortTitle: 'RESASコンテスト', summary: '地域経済分析システムを活用した提案', tags: ['ビジネス', '研究'] },
+            // 社会福祉・現場主義型
+            { id: 'p16', title: 'こども家庭福祉学会での発表', shortTitle: '学会発表(福祉)', summary: '現場での知見を学術的に発表', tags: ['社会福祉', '研究'] },
+            { id: 'p17', title: 'ゲシュタルト心理学', shortTitle: 'ゲシュタルト心理学', summary: '心理学アプローチの学習と実践', tags: ['社会福祉'] },
+            { id: 'p18', title: '学習支援事業 / 児童育成支援', shortTitle: '学習・児童支援', summary: 'ボランティア拠点での活動', tags: ['社会福祉'] },
+            { id: 'p19', title: '小学校でのパソコンクラブボラ', shortTitle: 'PCクラブボラ', summary: '授業作成 / 地域協働の授業', tags: ['社会福祉', 'エンジニア'] },
+            { id: 'p20', title: '各種ボランティア活動', shortTitle: '各種ボランティア', summary: 'きょうだい児、発達困難児支援、防災フェス等', tags: ['社会福祉'] },
+        ];
+
+        // JSONからプロジェクト詳細情報を読み込む
+        let projectDetailsMap = {};
+
+        fetch('./public/projects/projects.json')
+            .then(res => res.json())
+            .then(data => {
+                projectDetailsMap = data.projects;
+                console.log('Projects loaded successfully:', Object.keys(projectDetailsMap).length, 'projects');
+            })
+            .catch(err => console.error('Failed to load projects.json:', err));
+
+        let currentFilter = 'All';
+        const INITIAL_MAX_HEIGHT = 400; 
+        const HEIGHT_STEP = 400; 
+        let currentMaxHeight = INITIAL_MAX_HEIGHT;
+
+        function getTagColorClass(tag) {
+            switch(tag) {
+                case 'エンジニア': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+                case '社会福祉': return 'bg-teal-50 text-teal-700 border-teal-200';
+                case 'ビジネス': return 'bg-amber-50 text-amber-700 border-amber-200';
+                case '研究': return 'bg-purple-50 text-purple-700 border-purple-200';
+                default: return 'bg-slate-50 text-slate-700 border-slate-200';
+            }
+        }
+
+        // セクションをHTMLにレンダリングするヘルパー関数
+        function renderSections(sections, techStack) {
+            if (!sections || sections.length === 0) {
+                // sectionsがない場合、テックスタックのみ表示
+                return techStack ? `<div class="bg-slate-50 p-4 rounded-lg border border-slate-200 text-sm font-mono text-slate-600">Tech Stack: ${techStack}</div>` : '';
+            }
+
+            let html = '';
+            sections.forEach(section => {
+                if (section.type === 'hero') {
+                    // メイン画像
+                    html += `
+                        <div class="rounded-xl overflow-hidden border border-slate-200 shadow-sm aspect-[2/1] bg-slate-100">
+                            <img src="${section.image}" alt="${section.alt || ''}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/800x400/f1f5f9/94a3b8'">
+                        </div>
+                    `;
+                } else if (section.type === 'text') {
+                    // テキストセクション
+                    html += `
+                        <section>
+                            <h3 class="text-lg font-bold text-slate-800 mb-3">${section.title || ''}</h3>
+                            <p class="text-slate-600 leading-relaxed">${section.content || ''}</p>
+                        </section>
+                    `;
+                } else if (section.type === 'image') {
+                    // インラインイメージ
+                    const widthClass = section.width === 'full' ? 'w-full' : 'w-1/2';
+                    html += `
+                        <div class="${widthClass}">
+                            <div class="rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-100">
+                                <img src="${section.image}" alt="${section.caption || ''}" class="w-full h-auto object-cover">
+                                ${section.caption ? `<div class="text-sm text-slate-600 p-3 bg-slate-50 border-t border-slate-200">${section.caption}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            return html;
+        }
+
+        function renderFeatured() {
+            const grid = document.getElementById('featured-grid');
+            grid.className = 'grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8';
+            grid.innerHTML = '';
+            
+            const featuredIds = ['p1', 'p6', 'p15']; 
+            
+            featuredIds.forEach((id, index) => {
+                const project = projectsData.find(p => p.id === id);
+                if(!project) return;
+
+                const tagsHtml = project.tags.map(tag => 
+                    `<span class="px-2 py-1 text-[10px] font-bold rounded-md border ${getTagColorClass(tag)}">${tag}</span>`
+                ).join('');
+
+                // プレースホルダーの背景画像を生成（後で本番の画像URLに差し替え可能）
+                const featuredImageUrl = `https://placehold.co/600x400/f8fafc/94a3b8?text=${encodeURIComponent(project.shortTitle)}`;
+
+                const card = document.createElement('div');
+                card.className = `project-card bg-white border border-slate-200 rounded-2xl flex flex-col relative group overflow-hidden h-full`;
+                
+                card.innerHTML = `
+                    <!-- 上部エリア（ビジュアル画像） -->
+                    <div class="h-40 bg-slate-100 relative overflow-hidden border-b border-slate-100 flex-shrink-0">
+                        <img src="${featuredImageUrl}" alt="${project.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    
+                    <!-- 下部エリア（詳細・タグ） -->
+                    <div class="p-6 md:p-8 flex flex-col flex-grow">
+                        <div class="flex flex-wrap gap-1.5 mb-4">
+                            ${tagsHtml}
+                        </div>
+                        <h3 class="text-xl font-extrabold text-slate-800 leading-tight mb-3 group-hover:text-indigo-600 transition-colors">${project.title}</h3>
+                        <p class="text-sm text-slate-600 font-medium leading-relaxed mb-6 flex-grow">
+                            ${project.summary}
+                        </p>
+                        
+                        <div class="pt-4 border-t border-slate-100 flex items-center text-xs font-bold text-slate-400 group-hover:text-indigo-600 transition-colors mt-auto">
+                            <span>View Case Study</span>
+                            <svg class="w-4 h-4 ml-1.5 transform group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                        </div>
+                    </div>
+                `;
+                
+                card.onclick = () => openDrawer(project);
+                grid.appendChild(card);
+            });
+        }
+
+        function renderFilters() {
+            const container = document.getElementById('filter-container');
+            container.innerHTML = '';
+            
+            axes.forEach(axis => {
+                const isActive = axis === currentFilter;
+                const btn = document.createElement('button');
+                btn.className = `px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 border ${
+                    isActive 
+                    ? 'bg-slate-900 text-white border-slate-900 shadow-md' 
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 hover:text-slate-900'
+                }`;
+                btn.innerText = axis;
+                btn.onclick = function() {
+                    filterProjects(axis);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function renderProjects() {
+            const grid = document.getElementById('projects-grid');
+            const wrapper = document.getElementById('projects-grid-wrapper');
+            const overlay = document.getElementById('projects-fade-overlay');
+            
+            grid.innerHTML = '';
+
+            const filtered = currentFilter === 'All' 
+                ? projectsData 
+                : projectsData.filter(p => p.tags.includes(currentFilter));
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p class="text-slate-500 col-span-full text-center py-10">該当するプロジェクトがありません。</p>';
+                wrapper.style.maxHeight = 'none';
+                if(overlay) overlay.style.display = 'none';
+                return;
+            }
+
+            filtered.forEach(project => {
+                const tagsHtml = project.tags.map(tag => 
+                    `<span class="px-2 py-1 text-[10px] font-bold rounded-md border ${getTagColorClass(tag)}">${tag}</span>`
+                ).join('');
+
+                const card = document.createElement('div');
+                card.className = 'project-card bg-white border border-slate-200 rounded-2xl p-6 flex flex-col h-full relative overflow-hidden group';
+                card.innerHTML = `
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent group-hover:via-indigo-400 transition-colors duration-500"></div>
+                    <div class="flex flex-wrap gap-1.5 mb-4">${tagsHtml}</div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 leading-tight group-hover:text-indigo-600 transition-colors">${project.title}</h3>
+                    <p class="text-sm text-slate-500 font-medium leading-relaxed mt-auto">${project.summary}</p>
+                `;
+                card.onclick = () => openDrawer(project);
+                grid.appendChild(card);
+            });
+
+            setTimeout(() => {
+                const actualHeight = grid.scrollHeight;
+                if (actualHeight > currentMaxHeight) {
+                    wrapper.style.maxHeight = currentMaxHeight + 'px';
+                    if(overlay) {
+                        overlay.style.display = 'flex';
+                        requestAnimationFrame(() => overlay.classList.remove('opacity-0'));
+                    }
+                } else {
+                    wrapper.style.maxHeight = actualHeight + 'px';
+                    if(overlay) {
+                        overlay.classList.add('opacity-0');
+                        setTimeout(() => { 
+                            if(actualHeight <= currentMaxHeight) overlay.style.display = 'none'; 
+                        }, 300);
+                    }
+                }
+            }, 50);
+        }
+
+        function showMoreProjects() {
+            currentMaxHeight += HEIGHT_STEP;
+            renderProjects();
+        }
+
+        function filterProjects(axis) {
+            currentFilter = axis;
+            currentMaxHeight = INITIAL_MAX_HEIGHT;
+            renderFilters();
+            renderProjects();
+            const projectsSection = document.getElementById('projects');
+            const rect = projectsSection.getBoundingClientRect();
+            if(rect.top < 0 || rect.top > window.innerHeight * 0.8) {
+                projectsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('overlay');
+        const body = document.body;
+
+        function openDrawer(project) {
+            const content = document.getElementById('drawer-content');
+            
+            content.style.opacity = '0';
+            content.style.transform = 'translateY(15px)';
+            
+            setTimeout(() => {
+                // JSONからプロジェクト詳細を取得
+                const details = projectDetailsMap[project.id];
+
+                if (!details) {
+                    // 詳細情報が見つからない場合はデフォルト表示
+                    console.warn(`Project details not found for ${project.id}. Available projects:`, Object.keys(projectDetailsMap));
+                    content.innerHTML = `
+                        <div class="mb-8">
+                            <h2 class="text-3xl font-extrabold text-slate-900 mb-4 leading-tight">${project.title}</h2>
+                        </div>
+                        <div class="space-y-6">
+                            <p class="text-slate-600">詳細情報は準備中です。概要と技術スタックをご覧ください。</p>
+                            <section>
+                                <h3 class="text-lg font-bold text-slate-800 mb-3">概要</h3>
+                                <p class="text-slate-700">${project.summary}</p>
+                            </section>
+                        </div>
+                    `;
+                    if (!drawer.classList.contains('active')) {
+                        overlay.classList.add('active');
+                        drawer.classList.add('active');
+                        body.classList.add('drawer-open');
+                    }
+                    requestAnimationFrame(() => {
+                        content.style.transition = 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+                        content.style.opacity = '1';
+                        content.style.transform = 'translateY(0)';
+                        content.scrollTop = 0;
+                    });
+                    return;
+                }
+
+                const tagsInteractive = project.tags.map(tag => 
+                    `<button onclick="filterProjects('${tag}'); closeDrawer();" class="px-3 py-1 text-xs font-bold rounded-lg border hover:scale-105 transition-transform ${getTagColorClass(tag)}">${tag}</button>`
+                ).join('');
+
+                // セクションをレンダリング
+                const sectionsHtml = renderSections(details.sections, details.techStack);
+
+                // 背景と課題、解決策と役割セクションのHTML
+                let standardSectionsHtml = `
+                    <section>
+                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">
+                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            概要 (Overview)
+                        </h3>
+                        <p class="text-slate-700 text-lg font-medium leading-relaxed">${details.overview}</p>
+                    </section>
+
+                    <section>
+                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">背景と課題 (Why)</h3>
+                        <p class="text-slate-600 leading-relaxed">${details.why}</p>
+                    </section>
+
+                    <section>
+                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">解決策と技術 (What & How)</h3>
+                        <p class="text-slate-600 leading-relaxed mb-4">${details.what}</p>
+                        ${details.techStack ? `<div class="bg-slate-50 p-4 rounded-lg border border-slate-200 text-sm font-mono text-slate-600">Tech Stack: ${details.techStack}</div>` : ''}
+                    </section>
+
+                    <section>
+                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">役割と行動 (Role & Action)</h3>
+                        <p class="text-slate-600 leading-relaxed">${details.role}</p>
+                    </section>
+                `;
+
+                content.innerHTML = `
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-extrabold text-slate-900 mb-4 leading-tight">${project.title}</h2>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            ${tagsInteractive}
+                        </div>
+                    </div>
+
+                    <div class="space-y-10">
+                        ${sectionsHtml ? `
+                            <div class="space-y-8">
+                                ${sectionsHtml}
+                            </div>
+                        ` : ''}
+                        ${standardSectionsHtml}
+                    </div>
+                `;
+
+                if (!drawer.classList.contains('active')) {
+                    overlay.classList.add('active');
+                    drawer.classList.add('active');
+                    body.classList.add('drawer-open');
+                }
+                
+                requestAnimationFrame(() => {
+                    content.style.transition = 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+                    content.style.opacity = '1';
+                    content.style.transform = 'translateY(0)';
+                    content.scrollTop = 0;
+                });
+            }, 50);
+        }
+
+        function closeDrawer() {
+            overlay.classList.remove('active');
+            drawer.classList.remove('active');
+            body.classList.remove('drawer-open');
+        }
+
+        function renderChaosMap() {
+            const targetContainers = ['chaosmap', 'drawer-chaosmap'];
+
+            // スタイリング用カラー定義
+            const axesData = {
+                '社会福祉': { color: 'bg-teal-500' },
+                'エンジニア': { color: 'bg-indigo-500' },
+                'ビジネス': { color: 'bg-amber-500' },
+                '研究': { color: 'bg-purple-500' }
+            };
+
+            // 全15パターンの組み合わせに対する正確な座標マッピング（％指定）
+            // 4つの正円の中心：左上(25,25), 右上(75,25), 左下(25,75), 右下(75,75)
+            const vennCoordinates = {
+                // 1種 (各円の中心を基準)
+                '社会福祉': { x: 25, y: 25 },
+                'エンジニア': { x: 75, y: 25 },
+                'ビジネス': { x: 25, y: 75 },
+                '研究': { x: 75, y: 75 },
+
+                // 2種 (隣接領域：各円の中心を結ぶ直線の1/2地点を基準)
+                'エンジニア,社会福祉': { x: 50, y: 25 },  // 上の中点
+                'ビジネス,研究': { x: 50, y: 75 },        // 下の中点
+                'ビジネス,社会福祉': { x: 25, y: 50 },    // 左の中点
+                'エンジニア,研究': { x: 75, y: 50 },      // 右の中点
+
+                // 2種 (対角領域：中心)
+                '社会福祉,研究': { x: 50, y: 50 },
+                'エンジニア,ビジネス': { x: 50, y: 50 },
+
+                // 3種 (3つの円の重なり領域)
+                'エンジニア,ビジネス,社会福祉': { x: 39, y: 50 },
+                'エンジニア,社会福祉,研究': { x: 61, y: 50 },
+                'ビジネス,社会福祉,研究': { x: 50, y: 61 },
+                'エンジニア,ビジネス,研究': { x: 50, y: 39 },
+
+                // 4種すべてが重なる中心部
+                'エンジニア,ビジネス,社会福祉,研究': { x: 50, y: 50 }
+            };
+
+            const groups = {};
+            projectsData.forEach(p => {
+                const validTags = p.tags.filter(t => axesData[t]).sort();
+                if(validTags.length === 0) return;
+                const key = validTags.join(',');
+                if(!groups[key]) groups[key] = [];
+                groups[key].push({project: p, tags: validTags});
+            });
+
+            targetContainers.forEach(prefix => {
+                const bgContainer = document.getElementById(`${prefix}-bg`);
+                const nodesContainer = document.getElementById(`${prefix}-nodes`);
+                if(!nodesContainer || !bgContainer) return;
+                
+                nodesContainer.innerHTML = '';
+                const isDrawer = prefix.includes('drawer');
+
+                // --- 背景の描画 ---
+                bgContainer.innerHTML = `
+                    <div class="absolute inset-0 overflow-hidden bg-white">
+                        <!-- ベン図の4つの円 -->
+                        <div class="absolute w-[55%] h-[55%] rounded-full bg-teal-300/30 mix-blend-multiply top-[4%] left-[4%] border border-teal-200/50"></div>
+                        <div class="absolute w-[55%] h-[55%] rounded-full bg-indigo-300/30 mix-blend-multiply top-[4%] right-[4%] border border-indigo-200/50"></div>
+                        <div class="absolute w-[55%] h-[55%] rounded-full bg-amber-300/30 mix-blend-multiply bottom-[4%] left-[4%] border border-amber-200/50"></div>
+                        <div class="absolute w-[55%] h-[55%] rounded-full bg-purple-300/30 mix-blend-multiply bottom-[4%] right-[4%] border border-purple-200/50"></div>
+                    </div>
+                    <!-- 領域のラベル -->
+                    <div class="absolute top-6 left-6 pointer-events-none">
+                        <div class="bg-teal-100 text-teal-700 font-bold px-3 py-2 rounded-lg shadow-sm leading-tight w-28 text-center">
+                            <div class="${isDrawer ? 'text-sm' : 'text-base'} font-bold">社会福祉</div>
+                        </div>
+                    </div>
+                    <div class="absolute top-6 right-6 pointer-events-none">
+                        <div class="bg-indigo-100 text-indigo-700 font-bold px-3 py-2 rounded-lg shadow-sm leading-tight w-28 text-center">
+                            <div class="${isDrawer ? 'text-sm' : 'text-base'} font-bold">エンジニア</div>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-6 left-6 pointer-events-none">
+                        <div class="bg-amber-100 text-amber-700 font-bold px-3 py-2 rounded-lg shadow-sm leading-tight w-28 text-center">
+                            <div class="${isDrawer ? 'text-sm' : 'text-base'} font-bold">ビジネス</div>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-6 right-6 pointer-events-none">
+                        <div class="bg-purple-100 text-purple-700 font-bold px-3 py-2 rounded-lg shadow-sm leading-tight w-28 text-center">
+                            <div class="${isDrawer ? 'text-sm' : 'text-base'} font-bold">研究</div>
+                        </div>
+                    </div>
+                `;
+
+                // --- ノード（バッジ）の描画 ---
+                Object.keys(groups).forEach(key => {
+                    const items = groups[key];
+                    const tags = key.split(',');
+                    
+                    // 定義した座標辞書からベースの座標を取得
+                    let cx = vennCoordinates[key]?.x || 50;
+                    let cy = vennCoordinates[key]?.y || 50;
+
+                    // 同じ交点にある複数のプロジェクトを分散配置
+                    items.forEach((item, index) => {
+                        const p = item.project;
+                        let offsetX = 0, offsetY = 0;
+                        
+                        if (index > 0) {
+                            // 黄金角によるらせん配置
+                            const angle = index * 137.5 * (Math.PI / 180);
+                            
+                            // 空間の広さに応じて散らばり具合を調整（散らばり度を削減）
+                            const spread = tags.length === 1 ? 28 : 18;
+                            const baseRadius = tags.length === 1 ? 35 : 20;
+                            const radius = baseRadius + (index - 1) * spread;
+                            
+                            // 横長のバッジ同士が重ならないよう、楕円状（横に広く）に散らす
+                            offsetX = Math.cos(angle) * radius * 1.3;
+                            offsetY = Math.sin(angle) * radius * 0.8;
+                        }
+
+                        // バッジのスタイル定義
+                        let badgeClasses = 'px-2 py-1.5 bg-white/90 backdrop-blur-sm border border-slate-200 rounded-md shadow-sm hover:border-slate-400 hover:shadow-md hover:scale-105 hover:bg-white z-10 hover:z-50';
+                        let textClasses = 'font-semibold text-slate-700';
+                        
+                        const textSizeSize = isDrawer ? "text-[10px]" : "text-xs md:text-sm";
+                        const displayText = p.shortTitle || p.title;
+
+                        const badge = document.createElement('div');
+                        badge.className = `absolute transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center transition-all cursor-pointer text-center group ${badgeClasses}`;
+                        badge.innerHTML = `
+                            <span class="${textSizeSize} leading-tight whitespace-nowrap max-w-[140px] overflow-hidden text-ellipsis ${textClasses}">${displayText}</span>
+                        `;
+                        
+                        badge.title = `${p.title}\n[${tags.join(' × ')}]`;
+                        badge.style.left = `calc(${cx}% + ${offsetX}px)`;
+                        badge.style.top = `calc(${cy}% + ${offsetY}px)`;
+                        
+                        badge.onclick = () => { openDrawer(p); };
+                        nodesContainer.appendChild(badge);
+                    });
+                });
+            });
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && drawer.classList.contains('active')) {
+                closeDrawer();
+            }
+        });
+
+        // Initialize UI
+        renderFeatured();
+        renderFilters();
+        renderProjects();
+        renderChaosMap(); 
+
+    </script>
+</body>
+</html>
