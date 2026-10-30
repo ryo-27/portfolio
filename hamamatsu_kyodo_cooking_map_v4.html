@@ -1,0 +1,1227 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>浜松市中央区｜協働センター調理室マップ</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;color:#1b3042;background:#f4f7fb}
+*{box-sizing:border-box}body{margin:0}header{background:#123047;color:white;padding:19px 25px}header h1{font-size:21px;margin:0 0 4px}header p{margin:0;color:#d5e3ed;font-size:12px}
+.layout{display:grid;grid-template-columns:370px 1fr;height:calc(100dvh - 83px)}aside{background:white;overflow:auto;border-right:1px solid #dbe5ed}
+.controls{padding:17px;position:sticky;top:0;background:white;z-index:10;border-bottom:1px solid #e7edf2}
+.controls label{font-size:12px;color:#5b6874;display:block;margin:9px 0 5px}
+.controls input,.controls select{padding:10px;border:1px solid #ccd7e0;border-radius:9px;background:white;width:100%;font:inherit}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:9px}.count{font-size:12px;color:#627384;margin-top:12px}
+.item{padding:14px 17px;cursor:pointer;border-bottom:1px solid #e9eef3}.item:hover,.item.active{background:#eaf4ff}
+.item strong{font-size:14px}.meta{font-size:12px;color:#627487;margin-top:5px;display:flex;gap:7px;flex-wrap:wrap}
+.pill{background:#e7f3ef;color:#176e52;border-radius:5px;padding:3px 6px}.unknown{background:#f1f2f4;color:#687482}.closed{background:#fff0ea;color:#ae5932}
+#map{height:100%;width:100%;background:#dfe9e6}.leaflet-popup-content{min-width:245px;margin:15px 17px}.leaflet-popup-content h2{margin:0 0 10px;font-size:17px}
+.kv{display:flex;justify-content:space-between;gap:15px;font-size:13px;margin:6px 0}.kv b{text-align:right}
+.links{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}.sources{padding-left:18px;font-size:12px;line-height:1.7}.sources a{color:#1264a3;overflow-wrap:anywhere}details{margin-top:10px;font-size:12px;cursor:auto}summary{cursor:pointer;color:#1264a3}.kv b{overflow-wrap:anywhere}.leaflet-popup-content{max-height:65dvh;overflow:auto}.item h2{font-size:15px}.item .kv{font-size:12px}.links a{font-size:12px;color:#1264a3}
+.note{font-size:11px;color:#667382;line-height:1.6;margin-top:12px}
+.dot{background:#217e68;border:2px solid white;box-shadow:0 1px 7px #3335;border-radius:50%;width:16px;height:16px}.dot.missing{background:#8798a7}.dot.closed{background:#cc7854}
+.legend{background:white;padding:9px 12px;border-radius:8px;font-size:12px;line-height:1.9;box-shadow:0 1px 8px #1c324638}
+.sw{display:inline-block;width:10px;height:10px;border-radius:100%;margin-right:6px}
+@media(max-width:750px){header{padding:13px 16px}header h1{font-size:17px}.layout{display:flex;flex-direction:column;height:auto}#map{height:53dvh;order:-1}aside{max-height:47dvh} .controls{position:relative}}
+</style></head><body>
+<header><h1>浜松市中央区｜協働センター料理教室マップ</h1><p>中央区の協働センター全28施設を調査｜公開情報確認日：2026年10月31日｜雄踏は同館内の文化センター調理室を案内</p></header>
+<div class="layout"><aside><div class="controls">
+<input type="search" id="search" placeholder="施設名・所在地で検索" aria-label="施設検索">
+<div class="twocol"><div><label>最低収容人数</label><select id="min"><option value="0" selected>指定なし</option><option value="20">20人以上</option><option value="25">25人以上</option><option value="30">30人以上</option><option value="35">35人以上</option></select></div>
+<div><label>表示対象</label><select id="status"><option value="all">全施設</option><option value="known">定員確認済み</option><option value="unknown">設備に未確認事項あり</option><option value="closed">長期休館中</option></select></div></div>
+<div class="twocol"><div><label>利用時間（日中）</label><select id="hours"><option value="3">3時間</option><option value="4" selected>4時間</option><option value="5">5時間</option><option value="6">6時間</option></select></div><div><label>料金区分</label><select id="rate"><option value="general">一般団体</option><option value="local">施設別の認定団体</option></select></div></div>
+<div class="twocol"><div><label>背景地図</label><select id="basemap"><option value="gsi">国土地理院（標準）</option><option value="pale">国土地理院（淡色）</option><option value="esri">Esri（予備）</option></select></div><div style="display:flex;align-items:end"><span style="font-size:11px;color:#687482;padding:7px 0">背景地図が表示されない場合は切替</span></div></div>
+<div id="tile-warning" hidden style="font-size:12px;color:#a04030;margin-top:10px">背景地図を取得できません。施設ピンは表示できます。接続環境を確認するか、施設一覧のGoogleマップを利用してください。</div>
+<div class="note">定員・基本室料：全28件確認。調理台の台数未確認：県居・伊佐見。新津の台数は改修前資料。休館中2件。空き状況は利用日時を指定して予約先で確認してください。各施設の「詳細・出典」から根拠を開けます。</div><div class="count" id="count"></div></div><div id="list"></div></aside><div id="map"><div id="map-error" style="display:none;position:absolute;inset:0;z-index:900;background:#f5f8fb;padding:35px;text-align:center;align-content:center"><h2>地図を読み込めませんでした</h2><p>ネットワーク制限で地図ライブラリが利用できません。左側の施設一覧からGoogleマップを開けます。</p></div></div></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const PLACES = [
+  {
+    "name": "中部協働センター",
+    "region": "中",
+    "address": "静岡県浜松市中央区早馬町2-1",
+    "capacity": 36,
+    "tables": 7,
+    "rate": 830,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/c-chubu.html",
+    "checkedAt": "2026-10-31",
+    "room": "クッキングルーム（クリエート浜松4階）",
+    "localRate": 410,
+    "localLabel": "認定地域活動団体",
+    "notes": [
+      "貸館の問い合わせ先はクリエート浜松。"
+    ],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/c-chubu.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1042/171"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/c-machi/c-create_price_list-3.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/163961/c-create_price_list-3.pdf"
+      },
+      {
+        "label": "定員・調理台（運営者）",
+        "url": "https://www.hcf.or.jp/facilities/create/room/cate04.php"
+      }
+    ],
+    "phone": "053-453-5311",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1042",
+    "equipmentNote": "調理台7台。"
+  },
+  {
+    "name": "西部協働センター",
+    "region": "中",
+    "address": "静岡県浜松市中央区広沢1丁目21-1",
+    "capacity": 36,
+    "tables": 7,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/c-seibu.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/c-seibu.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1048/201"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/c-seibu/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/163665/c-seibu_purice_list.pdf"
+      }
+    ],
+    "phone": "053-452-0734",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1048",
+    "equipmentNote": "・調理実習などにお使いいただけます。 ・ホワイトボード、電子レンジあり。 ・調理台７台（ガスオーブン付） ※他の備品に関しては事前にお問合せください。"
+  },
+  {
+    "name": "北部協働センター",
+    "region": "中",
+    "address": "静岡県浜松市中央区葵東1丁目15-1",
+    "capacity": 24,
+    "tables": 7,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/c-hokubu.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/c-hokubu.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1054/201"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/c-hokubu/r8/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/163843/c-hokubu_price-list.pdf"
+      }
+    ],
+    "phone": "053-436-5931",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1054",
+    "equipmentNote": "・調理実習にお使いいただけます。 ・ガスオーブンレンジ5台あり。 ・調理台7台（うち1台講師用） 日曜・祝日に利用される場合は事前にご相談ください。",
+    "tableNote": "うち講師用1台"
+  },
+  {
+    "name": "南部協働センター",
+    "region": "中",
+    "address": "静岡県浜松市中央区海老塚2丁目25-17",
+    "capacity": 16,
+    "tables": 1,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/c-nanbu.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [
+      "予約システムは調理台1台と記載。定員16人から台数を推定していません。"
+    ],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/c-nanbu.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1052/181"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/c-nanbu/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/164057/c-nanbuprice_list.pdf"
+      }
+    ],
+    "phone": "053-455-1501",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1052",
+    "equipmentNote": "・調理実習等にお使いいただけます。 ・調理台は1台あり。 ・オーブンレンジ2台あり。"
+  },
+  {
+    "name": "東部協働センター",
+    "region": "中",
+    "address": "静岡県浜松市中央区相生町23-1",
+    "capacity": 25,
+    "tables": 5,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/c-tobu_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/c-tobu_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1050/161"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/c-tobu/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/163782/20260401ryoukinhyou.pdf"
+      }
+    ],
+    "phone": "053-462-1092",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1050",
+    "equipmentNote": "・調理実習等。 ・調理台5台（うち１台は講師用）。 ※電子レンジ付き高速オーブンあり。 ※その他器具に関しては、事前にご確認ください。 ※入室の際は、スリッパに履き替えてください。",
+    "tableNote": "うち講師用1台"
+  },
+  {
+    "name": "曳馬協働センター",
+    "region": "中",
+    "address": "静岡県浜松市中央区曳馬3丁目13-10",
+    "capacity": 24,
+    "tables": 7,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/c-hikuma_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/c-hikuma_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1053/191"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/c-hikuma/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/163673/price_list.pdf"
+      }
+    ],
+    "phone": "053-464-2517",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1053",
+    "equipmentNote": "・ 飲食可能 ・ 調理実習などにお使いいただけます。 ・ ホワイトボード、電子レンジ2台あり。 ・ 調理台7台（ガスオーブン付）のうち1台は講師用です。 ・他の備品に関しては事前にお問合せください。 ・スリッパをご持参ください。",
+    "tableNote": "うち講師用1台"
+  },
+  {
+    "name": "富塚協働センター",
+    "region": "中",
+    "address": "静岡県浜松市中央区富塚町1740-1",
+    "capacity": 36,
+    "tables": 5,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/c-tomitsuka_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/c-tomitsuka_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1051/161"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/c-tomitsuka/price_list.html"
+      }
+    ],
+    "phone": "053-472-7682",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1051",
+    "equipmentNote": "調理実習等。調理台5台（内1台は講師用）、ホワイトボード有。",
+    "tableNote": "うち講師用1台"
+  },
+  {
+    "name": "佐鳴台協働センター",
+    "region": "中",
+    "address": "静岡県浜松市中央区佐鳴台2丁目24-1",
+    "capacity": 30,
+    "tables": 5,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/c-sanarudai_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/c-sanarudai_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1047/151"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/c-sanarudai/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/163707/sanarudai_price_list.pdf"
+      },
+      {
+        "label": "調理台（公式施設一覧・PDF 78ページ）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/public/documents/03_%E6%96%BD%E8%A8%AD%E4%B8%80%E8%A6%A7.pdf#page=78"
+      }
+    ],
+    "phone": "053-447-4190",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1047",
+    "equipmentNote": ""
+  },
+  {
+    "name": "高台協働センター",
+    "region": "中",
+    "address": "静岡県浜松市中央区和合町58-30",
+    "capacity": 24,
+    "tables": 5,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/c-takadai_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/c-takadai_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1049/151"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/c-takadai/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/163711/facility_usage_fee_for_takadai_kyodo_center.pdf"
+      }
+    ],
+    "phone": "053-472-1468",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1049",
+    "equipmentNote": "・調理実習等。 ・ホワイトボードあり。 ・調理台5台（うち1台講師用）・ガスオーブン4台・電子レンジ1台あり。",
+    "tableNote": "うち講師用1台"
+  },
+  {
+    "name": "県居協働センター",
+    "region": "中",
+    "address": "静岡県浜松市中央区東伊場2丁目7-2",
+    "capacity": 18,
+    "tables": null,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/c-agatai_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [
+      "ガスコンロ・ガスオーブン3台の記載はありますが、調理台の台数とは区別しています。"
+    ],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/c-agatai_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1046/141"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/c-agatai/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/163679/c-agatai_price_list.pdf"
+      }
+    ],
+    "phone": "053-456-1415",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1046",
+    "equipmentNote": "・調理実習等。 ・ホワイトボードあり。 ・ガスコンロ・ガスオーブン3台あり。 ・電子レンジあり。 ※他の備品に関しては事前にお問い合わせください。",
+    "tableNote": "台数の公開記載なし"
+  },
+  {
+    "name": "三方原協働センター",
+    "region": "中",
+    "address": "静岡県浜松市中央区三方原町1179-5",
+    "capacity": 40,
+    "tables": 5,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/k-mikatabara_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/k-mikatabara_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1055/141"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/c-mikatahara/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/163857/c-mikatahara_price-list.pdf"
+      }
+    ],
+    "phone": "053-437-6522",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1055",
+    "equipmentNote": "料理実習等。調理台５台あり（うち１台は講師用）電子レンジあり、ホワイトボードあり。他の備品に関しては事前にお問い合わせください。",
+    "tableNote": "うち講師用1台"
+  },
+  {
+    "name": "笠井協働センター",
+    "region": "東",
+    "address": "静岡県浜松市中央区笠井町861",
+    "capacity": 36,
+    "tables": 7,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/h-kasai_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/h-kasai_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1057/151"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/e-kasai/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/164043/ryokin_kasai.pdf"
+      }
+    ],
+    "phone": "053-433-3224",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1057",
+    "equipmentNote": "料理実習、調理台7台（うち1台講師用）、ガスコンロ、ガスオーブン。（詳細については事前にお問い合わせください）",
+    "tableNote": "うち講師用1台"
+  },
+  {
+    "name": "長上協働センター",
+    "region": "東",
+    "address": "静岡県浜松市中央区市野町2620-1",
+    "capacity": 24,
+    "tables": 5,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/h-nagakami_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/h-nagakami_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1061/141"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/e-nagakami/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/164045/ryokin_nagakami.pdf"
+      }
+    ],
+    "phone": "053-421-3595",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1061",
+    "equipmentNote": "・ 調理実習等にお使いいただけます。 ・ 設備：調理台5台・ホワイトボード・ガスコンロ・ガスオーブン。 （詳細について事前にお問合わせください。）"
+  },
+  {
+    "name": "蒲協働センター",
+    "region": "東",
+    "address": "静岡県浜松市中央区子安町309-1",
+    "capacity": 32,
+    "tables": 5,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/h-kaba_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/h-kaba_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1058/141"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/e-kaba/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/164046/ryokin_kaba.pdf"
+      }
+    ],
+    "phone": "053-464-2190",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1058",
+    "equipmentNote": "調理実習等。調理台５台（うち１台は講師用）、ガスコンロ、ガスオーブン、電子レンジ。（詳細については事前にお問合わせください。）",
+    "tableNote": "うち講師用1台"
+  },
+  {
+    "name": "天竜協働センター",
+    "region": "東",
+    "address": "静岡県浜松市中央区薬新町99",
+    "capacity": 24,
+    "tables": 5,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/h-tenryu_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/h-tenryu_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1060/141"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/e-tenryu/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/164047/ryokin_tenryu.pdf"
+      },
+      {
+        "label": "調理台（地域カルテ・PDF 11ページ／2024年5月）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/164869/tenryu_karute.pdf#page=11"
+      }
+    ],
+    "phone": "053-421-0379",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1060",
+    "equipmentNote": "・調理実習などにお使いいただけます。 ・ホワイトボード・電子レンジ ・ガスオーブン・ガスコンロ ・他の調理器具に関しては事前に協働センターへお問合せください"
+  },
+  {
+    "name": "積志協働センター",
+    "region": "東",
+    "address": "静岡県浜松市中央区積志町1825",
+    "capacity": 36,
+    "tables": 7,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/h-sekisi_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/h-sekisi_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1059/181"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/e-sekishi/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/164048/ryokin_sekisi.pdf"
+      }
+    ],
+    "phone": "053-433-3715",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1059",
+    "equipmentNote": "調理実習等。調理台7台（うち１台講師用）、ホワイトボードあり。ガスコンロ、ガスオーブン、電子レンジあり。",
+    "tableNote": "うち講師用1台"
+  },
+  {
+    "name": "入野協働センター",
+    "region": "西",
+    "address": "静岡県浜松市中央区入野町9858",
+    "capacity": 35,
+    "tables": 7,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/n-irino_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/n-irino_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1069/151"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/w-irino/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/163967/w-irino_price_list.pdf"
+      }
+    ],
+    "phone": "053-449-2396",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1069",
+    "equipmentNote": "・調理実習等にご利用下さい。 ・オーブン、各種食器類、各種調理器具、ホワイトボード有り。 ・調理台は7台（うち1台は講師用）ご利用いただけます。 ・備品の詳細に関しては、事前に協働センターへお問合せください。",
+    "tableNote": "うち講師用1台"
+  },
+  {
+    "name": "篠原協働センター",
+    "region": "西",
+    "address": "静岡県浜松市中央区篠原町20399-1",
+    "capacity": 24,
+    "tables": 4,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/n-sinohara_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/n-sinohara_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1071/171"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/w-shinohara/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/163990/w-shinohara_price_list.pdf"
+      }
+    ],
+    "phone": "053-448-7859",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1071",
+    "equipmentNote": "料理実習等。オーブン、ホワイトボード、IH調理機器、調理台４台あり。その他の備品はお問合せください。"
+  },
+  {
+    "name": "神久呂協働センター",
+    "region": "西",
+    "address": "静岡県浜松市中央区神原町922",
+    "capacity": 36,
+    "tables": 4,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/n-kakuro_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/n-kakuro_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1070/141"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/w-kakuro/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/163950/w-kakuro_price_list.pdf"
+      }
+    ],
+    "phone": "053-485-5001",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1070",
+    "equipmentNote": "・料理勉強会等。 ・電気・ガス併用オーブンレンジ６台、ガス専用オーブンレンジ１台あり。調理台4台あり。（うち、講師用1台）",
+    "tableNote": "うち講師用1台"
+  },
+  {
+    "name": "伊佐見協働センター",
+    "region": "西",
+    "address": "静岡県浜松市中央区伊左地町45",
+    "capacity": 14,
+    "tables": null,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/n-isami_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [
+      "ガステーブル2台（計6口）とガスオーブン2台は確認。調理台総数の記載は確認できませんでした。"
+    ],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/n-isami_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1068/141"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/w-isami/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/163973/w-isami_price_list.pdf"
+      }
+    ],
+    "phone": "053-486-0034",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1068",
+    "equipmentNote": "62㎡。料理実習等。ガステーブル2台（1台につきコンロ3口）、ガスオーブン2台、ホワイトボード、電子レンジあり。",
+    "tableNote": "台数の公開記載なし"
+  },
+  {
+    "name": "庄内協働センター",
+    "region": "西",
+    "address": "静岡県浜松市中央区庄内町14-5",
+    "capacity": 15,
+    "tables": 2,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/n-syounai_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/n-syounai_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1072/141"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/w-syonai/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/163980/w-syonai_price_list.pdf"
+      },
+      {
+        "label": "調理台（公式施設一覧・PDF 96ページ）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/public/documents/03_%E6%96%BD%E8%A8%AD%E4%B8%80%E8%A6%A7.pdf#page=96"
+      }
+    ],
+    "phone": "053-487-3303",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1072",
+    "equipmentNote": "料理実習等。 50㎡、調理台、ガスオーブン2台、ホワイトボード、電子レンジあり。"
+  },
+  {
+    "name": "和地協働センター",
+    "region": "西",
+    "address": "静岡県浜松市中央区和地町6578",
+    "capacity": 25,
+    "tables": 4,
+    "rate": 520,
+    "status": "本館休館",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/n-waji_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [
+      "本館は2026年5月1日〜2027年1月31日、大規模改修で利用停止。体育館は2026年2月1日〜2027年6月30日。仮設の講座室・児童室は貸出あり。",
+      "定員は予約システムと地域カルテが25人、公式施設一覧PDFは14人と不一致。25人を採用。改修後の定員・設備は再確認が必要。"
+    ],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/n-waji_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1073/141"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/w-waji/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/163975/w-waji_price_list.pdf"
+      },
+      {
+        "label": "定員・調理台（地域カルテ・PDF 11ページ／2024年10月）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/174553/waji-karte.pdf#page=11"
+      },
+      {
+        "label": "休館期間（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/w-shinko/kyodo-center/waji-closed.html"
+      },
+      {
+        "label": "定員の異なる施設一覧（PDF 98ページ）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/public/documents/03_%E6%96%BD%E8%A8%AD%E4%B8%80%E8%A6%A7.pdf#page=98"
+      }
+    ],
+    "phone": "053-486-0253",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1073",
+    "equipmentNote": "・調理実習等にお使いいただけます。 ・ガスコンロ9台、ガスオーブン2台、電子レンジをご利用いただけます。他の備品に関しては事前に協働センターまで問合わせください。",
+    "closureStart": "2026-05-01",
+    "closureEnd": "2027-01-31"
+  },
+  {
+    "name": "雄踏協働センター",
+    "region": "西",
+    "address": "静岡県浜松市中央区雄踏町宇布見5427",
+    "capacity": 50,
+    "tables": 7,
+    "rate": 710,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/n-yuto.html",
+    "checkedAt": "2026-10-31",
+    "room": "雄踏文化センター 調理室（別施設）",
+    "localRate": 350,
+    "localLabel": "認定生涯学習関係団体等",
+    "notes": [
+      "雄踏協働センターは雄踏文化センター内。掲載する定員・設備・料金は、別施設である雄踏文化センター調理室のものです。",
+      "認定団体料金は「生涯学習関係団体等」の認定が必要。協働センターの地域活動団体区分とは異なります。"
+    ],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/n-yuto.html"
+      },
+      {
+        "label": "調理室の定員・設備・料金・予約（指定管理者）",
+        "url": "https://www.birukan.jp/yutobunka/overview/"
+      }
+    ],
+    "phone": "053-596-1100",
+    "equipmentNote": "調理台7台。隣接する託児室あり。",
+    "bookingUrl": "https://www.birukan.jp/yutobunka/overview/"
+  },
+  {
+    "name": "可美協働センター",
+    "region": "南",
+    "address": "静岡県浜松市中央区増楽町1723-1",
+    "capacity": 16,
+    "tables": 4,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/m-kami.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/m-kami.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1078/151"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/s-kami/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/164031/s-kami_price_list.pdf"
+      }
+    ],
+    "phone": "053-440-0007",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1078",
+    "equipmentNote": "調理実習などにご利用できます。 調理台4台。ガスコンロ・ガスオーブン付。 ※ 他の詳細な調理器具は事前にお問い合わせください。"
+  },
+  {
+    "name": "南陽協働センター",
+    "region": "南",
+    "address": "静岡県浜松市中央区下江町462",
+    "capacity": 36,
+    "tables": 5,
+    "rate": 520,
+    "status": "休館",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/m-nanyo_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [
+      "2026年1月19日〜2028年1月3日、大規模改修により体育館を含むすべての貸館を停止。定員・設備・室料は改修前の公開値。再開後は再確認が必要。"
+    ],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/m-nanyo_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1082/151"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/s-nanyo/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/163997/s-nanyo_price_list.pdf"
+      },
+      {
+        "label": "休館期間（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/s-machi/2025-nanyo-kyuukan.html"
+      }
+    ],
+    "phone": "053-426-3714",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1082",
+    "equipmentNote": "・調理実習などにお使いいただけます。 ・ホワイトボード・電子レンジ ・調理台5台・ガスオーブン4台 ・他の調理器具に関しては事前に協働センターへお問合せください。",
+    "closureStart": "2026-01-19",
+    "closureEnd": "2028-01-03"
+  },
+  {
+    "name": "白脇協働センター",
+    "region": "南",
+    "address": "静岡県浜松市中央区寺脇町241",
+    "capacity": 18,
+    "tables": 4,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/m-sirawaki_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/m-sirawaki_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1080/151"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/s-shirawaki/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/164002/s-shirawaki_price_list.pdf"
+      }
+    ],
+    "phone": "053-441-8088",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1080",
+    "equipmentNote": "・調理実習などにお使いいただけます。 ・ホワイトボードあり。調理台4台・ガスオーブン２台あり。電子レンジあり。 ※他の詳細な調理器具に関しては、事前に協働センターへお問い合わせください。"
+  },
+  {
+    "name": "新津協働センター",
+    "region": "南",
+    "address": "静岡県浜松市中央区新橋町910",
+    "capacity": 36,
+    "tables": 5,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/m-sinzu_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [
+      "調理台5台は2024年10月の地域カルテによるもの。改修後の現行台数は公開情報で確認できず、施設への確認が必要。"
+    ],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/m-sinzu_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1081/131"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/s-sinzu/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/164001/s-sinzu_price_list.pdf"
+      },
+      {
+        "label": "調理台（地域カルテ・PDF 10ページ／2024年10月）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/164478/sinzu_tiikikarute.pdf#page=10"
+      }
+    ],
+    "phone": "053-448-2449",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1081",
+    "equipmentNote": "・調理実習などにお使いいただけます。 ・ガスオーブン、ガスコンロあり。 ・ホワイトボード、電子レンジあり。 ・他の備品に関しては事前に協働センターへお問い合わせください。",
+    "tableNote": "2024年10月の地域カルテ"
+  },
+  {
+    "name": "五島協働センター",
+    "region": "南",
+    "address": "静岡県浜松市中央区福島町242-1",
+    "capacity": 36,
+    "tables": 5,
+    "rate": 520,
+    "status": "",
+    "officialUrl": "https://www.city.hamamatsu.shizuoka.jp/maps/m-goto_sc.html",
+    "checkedAt": "2026-10-31",
+    "room": "料理教室",
+    "localRate": 260,
+    "localLabel": "認定地域活動団体",
+    "notes": [],
+    "sources": [
+      {
+        "label": "所在地・連絡先（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/maps/m-goto_sc.html"
+      },
+      {
+        "label": "定員・設備（公式予約システム）",
+        "url": "https://yoyacool.e-harp.jp/hamamatsu/RoomGuides/Index/221309/1079/151"
+      },
+      {
+        "label": "基本室料（浜松市）",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/s-goto/price_list.html"
+      },
+      {
+        "label": "料金表PDF",
+        "url": "https://www.city.hamamatsu.shizuoka.jp/documents/164030/s-goto_price_list.pdf"
+      }
+    ],
+    "phone": "053-425-9147",
+    "bookingUrl": "https://yoyacool.e-harp.jp/hamamatsu/FacilityGuides/Index/221309/1079",
+    "equipmentNote": "・調理実習などにお使いいただけます。 ・調理台5台・ガスオーブン2台・電子レンジあり。 ※他の詳細な調理器具に関しては事前に協働センターにお問合せください。"
+  }
+];
+const OFFICIAL="https://www.city.hamamatsu.shizuoka.jp/shisetsu-annai/kyodo-center/index.html";
+const ROOM_URL="https://www.hcf.or.jp/facilities/create/room/cate04.php";
+const MAP_URL=q=>"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(q);
+const map=typeof L === "undefined" ? null : L.map("map",{zoomControl:true}).setView([34.736,137.726],11);
+if(!map) document.getElementById("map-error").style.display="block";
+// 国土地理院の地理院タイルを優先。OSMの標準タイル配信サーバーは使用しない。
+const tileSources={
+  gsi:{url:"https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png",attribution:'<a href="https://maps.gsi.go.jp/" target="_blank" rel="noopener">地理院タイル（国土地理院）</a>',maxNativeZoom:18},
+  pale:{url:"https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png",attribution:'<a href="https://maps.gsi.go.jp/" target="_blank" rel="noopener">地理院タイル（国土地理院）</a>',maxNativeZoom:18},
+  esri:{url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",attribution:'Tiles © Esri',maxNativeZoom:19}
+};
+let currentTiles=null, autoFailed=false;
+function setBaseMap(key){
+ if(!map)return;
+ if(currentTiles)map.removeLayer(currentTiles);
+ const src=tileSources[key];
+ currentTiles=L.tileLayer(src.url,{attribution:src.attribution,maxZoom:19,maxNativeZoom:src.maxNativeZoom, opacity: 0.4, crossOrigin:true});
+ let errors=0,ok=0;
+ currentTiles.on("tileload",()=>{ok++;});
+ currentTiles.on("tileerror",()=>{
+  errors++;
+  if(key!=="esri"&&!autoFailed&&errors>=3&&ok===0){
+   autoFailed=true;
+   document.getElementById("basemap").value="esri";
+   setBaseMap("esri");
+  }
+  if(key==="esri"&&errors>=3&&ok===0){
+   document.getElementById("tile-warning").hidden=false;
+  }
+ });
+ currentTiles.addTo(map);
+ document.getElementById("tile-warning").hidden=true;
+}
+if(map)setBaseMap("gsi");
+document.getElementById("basemap").addEventListener("change",e=>{autoFailed=true;setBaseMap(e.target.value)});
+const markers=new Map();
+const el=id=>document.getElementById(id);
+const escapeHTML=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const opt={search:"",min:0,status:"all",hours:4,rate:"general"};
+function price(p){
+ if(p.rate==null)return null;
+ const hr=opt.rate==="local"?p.localRate:p.rate;
+ if(hr==null)return null;
+ return hr*opt.hours;
+}
+function priceText(p){const n=price(p);return n===null?"要確認":n.toLocaleString("ja-JP")+"円（基本室料）"}
+function url(p){return p.officialUrl||OFFICIAL}
+function needsCheck(p){return p.tables==null||p.name==="新津協働センター"}
+function popup(p){
+ const cap=p.capacity==null?"公開値を確認できず":p.capacity+"人";
+ const rate=opt.rate==="local"?p.localRate:p.rate;
+ const sources=p.sources.map(a=>`<li><a href="${escapeHTML(a.url)}" target="_blank" rel="noopener">${escapeHTML(a.label)} ↗</a></li>`).join("");
+ return `<h2>${escapeHTML(p.name)}</h2>
+ <div class="kv"><span>対象の部屋</span><b>${escapeHTML(p.room)}</b></div>
+ <div class="kv"><span>定員（公開値）</span><b>${cap}</b></div>
+ <div class="kv"><span>調理台</span><b>${p.tables==null?"台数は未確認":p.tables+"台"}${p.tableNote?"（"+escapeHTML(p.tableNote)+"）":""}</b></div>
+ <div class="kv"><span>日中${opt.hours}時間</span><b>${priceText(p)}</b></div>
+ <div class="kv"><span>料金区分・1時間</span><b>${opt.rate==="local"?escapeHTML(p.localLabel):"一般団体"}／${rate==null?"未確認":rate.toLocaleString("ja-JP")+"円"}</b></div>
+ <div class="kv"><span>長期休館の告知</span><b>${p.status?escapeHTML(p.status)+"（"+p.closureStart+"〜"+p.closureEnd+"）":"公式施設案内に長期休館表示なし"}</b></div>
+ <div class="kv"><span>住所</span><b>${escapeHTML(p.address)}</b></div>
+ <div class="kv"><span>問い合わせ</span><b><a href="tel:${p.phone}">${p.phone}</a></b></div>
+ ${p.equipmentNote?`<div class="note"><b>設備・利用条件：</b>${escapeHTML(p.equipmentNote)}</div>`:""}
+ ${p.notes.map(n=>`<div class="note">${escapeHTML(n)}</div>`).join("")}
+ <div class="links"><a href="${url(p)}" target="_blank" rel="noopener">公式施設案内 ↗</a><a href="${p.bookingUrl}" target="_blank" rel="noopener">部屋案内・予約先 ↗</a><a href="${MAP_URL(p.name+" "+p.address)}" target="_blank" rel="noopener">Googleマップ ↗</a></div>
+ <div class="note">9〜18時の基本室料を時間数で計算。設備使用料等は含みません。営業利用等の加算条件は料金表を参照。休館中の金額は通常時の参考値です。認定団体区分は施設ごとに異なります。空き状況・臨時休館・利用条件は予約先で確認してください。</div>
+ <details><summary>確認したソースURL（${p.checkedAt}）</summary><ul class="sources">${sources}</ul></details>`;
+}
+function eligible(p){
+ if(opt.search&&!((p.name+" "+p.address).includes(opt.search)))return false;
+ if(opt.status==="known"&&p.capacity==null)return false;
+ if(opt.status==="unknown"&&!needsCheck(p))return false;
+ if(opt.status==="closed"&&!p.status)return false;
+ if(opt.min>0&&p.capacity!=null&&p.capacity<opt.min)return false;
+ return true;
+}
+function render(){
+ el("list").replaceChildren();let shown=0;
+ for(const p of PLACES){
+  const visible=eligible(p);const marker=markers.get(p.name);
+  if(marker){if(visible)marker.addTo(map);else map.removeLayer(marker);marker.setPopupContent(popup(p))}
+  if(!visible)continue;shown++;
+  const node=document.createElement("div");node.className="item";node.tabIndex=0;
+  const cls=p.status?"closed":p.capacity==null?"unknown":"pill";
+  node.innerHTML=`<strong>${escapeHTML(p.name)}</strong><div class="meta"><span class="${cls}">${p.capacity+"人"}${p.status?"・"+escapeHTML(p.status):""}</span><span>${priceText(p)}</span>${needsCheck(p)?'<span class="unknown">設備に未確認事項あり</span>':""}</div><details class="facility-details"><summary>詳細・出典</summary>${popup(p)}</details>`;
+  node.querySelector(".facility-details").addEventListener("click",e=>e.stopPropagation());
+  node.querySelector(".facility-details").addEventListener("keydown",e=>e.stopPropagation());
+  const go=()=>{if(marker&&map){map.setView(marker.getLatLng(),14);marker.openPopup()}else window.open(MAP_URL(p.name+" "+p.address),"_blank","noopener")};
+  node.onclick=go;node.onkeydown=e=>{if(e.key==="Enter")go()};
+  el("list").appendChild(node);
+ }
+ el("count").textContent=`表示 ${shown} / ${PLACES.length}施設 ｜定員・基本室料確認済み28件／調理台台数確認26件（新津は改修前資料）／橙：長期休館`;
+}
+["search","min","status","hours","rate"].forEach(id=>el(id).addEventListener(id==="search"?"input":"change",()=>{opt[id]=["min","hours"].includes(id)?Number(el(id).value):el(id).value;render()}));
+const cacheKey="hamamatsu-kyodo-gsi-v2";
+let cache={};try{cache=JSON.parse(localStorage.getItem(cacheKey)||"{}")}catch(e){}
+function addPin(p,lat,lon){
+ if(!map)return;
+ const dot=p.status?"closed":p.capacity==null?"missing":"";
+ const marker=L.marker([lat,lon],{icon:L.divIcon({className:"",html:`<div class="dot ${dot}"></div>`,iconSize:[17,17],iconAnchor:[8,8]})}).bindPopup(popup(p)).bindTooltip(p.name,{direction:"top",offset:[0,-9]});
+ marker.on("mouseover",()=>marker.openPopup());markers.set(p.name,marker);if(eligible(p))marker.addTo(map);
+}
+async function geocode(p){
+ if(cache[p.address]){addPin(p,...cache[p.address]);return}
+ try{
+  // 国土地理院・住所検索API。取得した地点は住所ベースの参考位置です。
+  const query=p.address.replace(/^静岡県浜松市中央区/,"浜松市中央区");
+  const res=await fetch("https://msearch.gsi.go.jp/address-search/AddressSearch?q="+encodeURIComponent(query));
+  if(!res.ok)throw Error("geocoding "+res.status);
+  const candidates=await res.json();
+  if(!candidates.length)throw Error("該当地点なし");
+  const [lon,lat]=candidates[0].geometry.coordinates;
+  if(lat<34.55||lat>34.95||lon<137.45||lon>138)throw Error("位置が市外");
+  cache[p.address]=[lat,lon];
+  try{localStorage.setItem(cacheKey,JSON.stringify(cache))}catch(e){}
+  addPin(p,lat,lon);
+ }catch(e){console.warn("地図位置の取得に失敗:",p.name,e)}
+}
+if(map){const legendControl=L.control({position:"bottomright"});legendControl.onAdd=()=>{let e=L.DomUtil.create("div","legend");e.innerHTML='<span class="sw" style="background:#217e68"></span>定員確認済み<br><span class="sw" style="background:#8798a7"></span>定員未確認<br><span class="sw" style="background:#cc7854"></span>長期休館';return e;};legendControl.addTo(map);}
+render();
+// 地図のピンは国土地理院の住所検索から順次取得します。
+if(map)Promise.allSettled(PLACES.map(geocode)).then(()=>{el("count").textContent+=" ｜位置取得完了（ピンがない施設は一覧のGoogleマップから確認）"});
+</script></body></html>
